@@ -8,6 +8,8 @@ namespace LR4OOPlastvers {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	static circles cont;
+	static int fCtrl = 0;
 	/// <summary>
 	/// Сводка для MyForm
 	/// </summary>
@@ -63,11 +65,13 @@ namespace LR4OOPlastvers {
 			// 
 			// pBox
 			// 
+			this->pBox->BackColor = System::Drawing::Color::White;
 			this->pBox->Location = System::Drawing::Point(0, 0);
 			this->pBox->Name = L"pBox";
 			this->pBox->Size = System::Drawing::Size(537, 295);
 			this->pBox->TabIndex = 0;
 			this->pBox->TabStop = false;
+			this->pBox->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &MyForm::pBox_Paint);
 			this->pBox->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::pBox_MouseClick);
 			// 
 			// cBoxCtrl
@@ -98,19 +102,78 @@ namespace LR4OOPlastvers {
 			this->Controls->Add(this->cBoxMulty);
 			this->Controls->Add(this->cBoxCtrl);
 			this->Controls->Add(this->pBox);
+			this->KeyPreview = true;
 			this->Name = L"MyForm";
 			this->Text = L"MyForm";
+			this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &MyForm::MyForm_KeyDown);
+			this->KeyUp += gcnew System::Windows::Forms::KeyEventHandler(this, &MyForm::MyForm_KeyUp);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pBox))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
 		}
+
 #pragma endregion
 	private: System::Void pBox_MouseClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
-		static circles cont(pBox);
+		cont.resetCurrent();
 		int x = e->X;
 		int y = e->Y;
-
+		CCircle* cur;
+		int counter = 0;
+		Graphics^ g = pBox->CreateGraphics();
+		for (int i = 0; i < cont.getSize(); i++) {
+			cur = cont.getCurrent();
+			if (cur->isPointInC(x, y)) counter++;
+			cont.next();
+		}
+		if (counter == 0) {
+			cont.unselect(g);
+			CCircle* c = new CCircle(x, y, true);
+			if (cont.last != nullptr) {
+				cont.last->Bleach(g);
+				cont.last->setIsSlctd(false);
+				cont.last->Draw(g);
+			}
+			c->Draw(g);
+			cont.push_back(c);
+		}
+		else if (counter > 0) {
+			cont.resetCurrent();
+			if (fCtrl == 0) cont.unClick(g);
+			cont.resetCurrent();
+			if (e->Button == System::Windows::Forms::MouseButtons::Left) {
+				for (int i = 0; i < cont.getSize(); i++) {
+					CCircle* cur = cont.getCurrent();
+					if (cur->isPointInC(x, y)) {
+						cur->Bleach(g);
+						cur->setIsSlctd(true);
+						cur->isClicked = true;
+						cur->Draw(g);
+						if (!(cBoxMulty->Checked)) break;
+					}
+					cont.next();
+				}
+			}
+			
+		}
 	}
-	};
+	private: System::Void pBox_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
+		Graphics^ g = pBox->CreateGraphics();
+		cont.DrawAll(g);
+	}
+private: System::Void MyForm_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e) {
+	Graphics^ g = pBox->CreateGraphics();
+	if (e->KeyCode == Keys::ControlKey && cBoxCtrl->Checked) {
+		fCtrl = 1;
+	}
+	else if (e->KeyCode == Keys::Delete) {
+		cont.deleteSlctd(g);
+	}
+}
+private: System::Void MyForm_KeyUp(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e) {
+	if (e->KeyCode == Keys::ControlKey && cBoxCtrl->Checked) {
+		fCtrl = 0;
+	}
+}
+};
 }

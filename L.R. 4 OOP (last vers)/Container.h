@@ -18,18 +18,21 @@ private:
 	};
 	Node* first;
 	Node* current;
-	
 	int size;
 public:
-	circles(System::Windows::Forms::PictureBox^ pBox) {
+	CCircle* last = nullptr;
+	circles() {
 		current = first = nullptr;
 		size = 0;
-		System::Drawing::SolidBrush^ brushUnSlctd = gcnew System::Drawing::SolidBrush(System::Drawing::Color::Gray);
-		System::Drawing::Graphics^ g = pBox->CreateGraphics();
-		System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::BlueViolet);
+		//System::Drawing::SolidBrush^ brushUnSlctd = gcnew System::Drawing::SolidBrush(System::Drawing::Color::Gray);
+		///System::Drawing::Graphics^ g = pBox->CreateGraphics();
+		//System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::BlueViolet);
 	}
 	CCircle* getCurrent() {
 		return (current->value);
+	}
+	int getSize() {
+		return size;
 	}
 	void next() {
 		if (current != nullptr) {
@@ -39,9 +42,10 @@ public:
 	void resetCurrent() {
 		current = first;
 	}
-	void push_back(CCircle& cr) {
+	void push_back(CCircle* cr) {
+		resetCurrent();
 		if (first == nullptr) {
-			first = new Node(cr);
+			first = new Node(*cr);
 			current = first;
 		}
 		else {
@@ -49,15 +53,18 @@ public:
 				next();
 
 			}
-			current->nextNode = new Node(cr);
+			current->nextNode = new Node(*cr);
 		}
 		size++;
 		resetCurrent();
+		last = cr;
 	}
 	void deleteCurrent() {
-		if (current->nextNode == nullptr) {
+		if (last == current->value) last = nullptr;
+		if (current == first) {
+			first = first->nextNode;
 			delete current;
-			current = nullptr;
+			current = first;
 			size--;
 		}
 		else if (current != nullptr) {
@@ -70,10 +77,52 @@ public:
 					delete oldCur;
 					break;
 				}
+				next();
 			}
-			current = current->nextNode;
+			current = nxt;
 			size--;
 		}
+	}
+	void unselect(System::Drawing::Graphics^ g) {
+		current = first;
+		while (current != nullptr) {
+			if ((current->value)->getIsSlctd()) {
+				current->value->setIsSlctd(false);
+				current->value->Bleach(g);
+				current->value->Draw(g);
+			}
+			next();
+		}
+	}
+	void unClick(System::Drawing::Graphics^ g) {
+		current = first;
+		while (current != nullptr) {
+			if ((current->value)->isClicked) {
+				current->value->setIsSlctd(false);
+				current->value->isClicked = false;
+				current->value->Bleach(g);
+				current->value->Draw(g);
+			}
+			next();
+		}
+	}
+	void DrawAll(System::Drawing::Graphics^ g) {
+		current = first;
+		while (current != nullptr) {
+			(current->value)->Draw(g);
+			next();
+		}
+	}
+	void deleteSlctd(System::Drawing::Graphics^ g) {
+		current = first;
+		while (current != nullptr) {
+			if (current->value->getIsSlctd()) {
+				current->value->Bleach(g);
+				deleteCurrent();
+			}
+			else next();
+		}
+		last = nullptr;
 	}
 
 };
