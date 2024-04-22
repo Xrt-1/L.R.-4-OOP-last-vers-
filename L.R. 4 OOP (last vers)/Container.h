@@ -18,18 +18,19 @@ private:
 	};
 	Node* first;
 	Node* current;
+	Node* last;//доделать определение last
 	int size;
 public:
-	CCircle* last = nullptr;
 	circles() {
-		current = first = nullptr;
+		last = current = first = nullptr;
 		size = 0;
-		//System::Drawing::SolidBrush^ brushUnSlctd = gcnew System::Drawing::SolidBrush(System::Drawing::Color::Gray);
-		///System::Drawing::Graphics^ g = pBox->CreateGraphics();
-		//System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::BlueViolet);
 	}
 	CCircle* getCurrent() {
-		return (current->value);
+		if (current->value!= nullptr) return (current->value);
+	}
+	CCircle* getLast() {
+		if (last != nullptr) return (last->value);
+		else return nullptr;
 	}
 	int getSize() {
 		return size;
@@ -43,46 +44,63 @@ public:
 		current = first;
 	}
 	void push_back(CCircle* cr) {
-		resetCurrent();
-		if (first == nullptr) {
-			first = new Node(*cr);
-			current = first;
+		Node* newNode = new Node(*cr);
+		if (first == nullptr) { 
+			first = newNode;
+			last = newNode;
 		}
 		else {
-			while (current->nextNode != nullptr) {
-				next();
-
-			}
-			current->nextNode = new Node(*cr);
+			last->nextNode = newNode; 
+			last = newNode;  
 		}
 		size++;
-		resetCurrent();
-		last = cr;
+	}
+	Node* prev(Node* cr) {
+		current = first;
+		for (int i = 0; i < size; i++) {
+			Node* prevNode = nullptr;
+			Node* r = first;
+			while (r != nullptr) {
+				if (r->nextNode == cr) {
+					prevNode = r;
+					break;
+				}
+				r = r->nextNode;
+			}
+			return prevNode;
+		}
 	}
 	void deleteCurrent() {
-		if (last == current->value) last = nullptr;
+		if (current == nullptr) return;
+
+		Node* r = first;
 		if (current == first) {
 			first = first->nextNode;
 			delete current;
 			current = first;
-			size--;
+			if (size == 1) last = current;
+
 		}
-		else if (current != nullptr) {
-			Node* nxt = current->nextNode;
-			Node* oldCur = current;
-			resetCurrent();
-			while (current != nullptr) {
-				if (current->nextNode == oldCur) {
-					current->nextNode = nxt;
-					delete oldCur;
-					break;
-				}
-				next();
+		else if(current == last) {
+			r = prev(last);
+			delete last;
+			last = r;
+			last->nextNode = current = nullptr;
+		}
+		else {
+			while (r->nextNode != current) {
+				r = r->nextNode;
 			}
-			current = nxt;
-			size--;
+			if (r != nullptr) {
+				r->nextNode = current->nextNode;
+				delete current;
+				current = r->nextNode;
+			}
 		}
+		size--;
 	}
+		
+		
 	void unselect(System::Drawing::Graphics^ g) {
 		current = first;
 		while (current != nullptr) {
@@ -122,7 +140,6 @@ public:
 			}
 			else next();
 		}
-		last = nullptr;
 	}
 
 };

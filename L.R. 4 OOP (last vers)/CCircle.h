@@ -5,14 +5,12 @@
 class CCircle {
 private:
 	int x, y, r;
-	bool isSelected, isDrawed;
+	bool isSelected;
 	void DrawUnSlctd(System::Drawing::Graphics^ g, System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::Gray)) {
 		g->FillEllipse(brush, x, y, r * 2, r * 2);
-		this->isDrawed = true;
 	}
 	void DrawSlctd(System::Drawing::Graphics^ g, System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::BlueViolet)) {
 		g->FillEllipse(brush, x, y, r * 2, r * 2);
-		this->isDrawed = true;
 	}
 public:
 	bool isClicked;
@@ -20,7 +18,7 @@ public:
 		r = 20;
 		x = _x - r;
 		y = _y - r;
-		isClicked = isDrawed = false;
+		isClicked = false;
 	}
 	CCircle(int x, int y, bool slctd) : CCircle(x, y) {
 		isSelected = slctd;
@@ -33,7 +31,6 @@ public:
 	}
 	bool isPointInC(int x1, int y1) {
 		int distanceSquared = (x1 - (x + r)) * (x1 - (x + r)) + (y1 - (y + r)) * (y1 - (y + r));
-		// Проверяем, попадает ли точка в круг
 		return distanceSquared <= r * r;
 	}
 	void Draw(System::Drawing::Graphics^ g) {
@@ -42,7 +39,6 @@ public:
 	}
 	void Bleach(System::Drawing::Graphics^ g, System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::White)) {
 		g->FillEllipse(brush, x, y, r * 2, r * 2);
-		this->isDrawed = false;
 	}
 	
 };
