@@ -172,6 +172,7 @@ private: System::Void MyForm_KeyDown(System::Object^ sender, System::Windows::Fo
 	else if (e->KeyCode == Keys::Delete) {
 		cont.deleteSlctd(g);
 		cont.DrawAll(g);
+		
 	}
 }
 private: System::Void MyForm_KeyUp(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e) {

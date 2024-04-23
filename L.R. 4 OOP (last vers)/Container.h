@@ -1,6 +1,5 @@
 #pragma once
 #include "CCircle.h"
-
 class circles {
 private:
 	class Node {
@@ -68,6 +67,31 @@ public:
 				r = r->nextNode;
 			}
 			return prevNode;
+		}
+	}
+	void del(CCircle* c) {
+		if (c == nullptr || first == nullptr) return;
+		Node* r = first;
+		while (r != nullptr) {
+			if (r->value == c) {
+				Node* p = prev(r);
+				if (p == nullptr) {
+					if (current == first) current = first->nextNode;
+					if (last == first) last = nullptr;
+					Node* nxt = first->nextNode;
+					delete first;
+					first = nxt;
+					return;
+				}
+				else {
+					if (current == r) current = current->nextNode;
+					if (last == r) last = p;
+					p->nextNode = r->nextNode;
+					delete r;
+					return;
+				}
+			}
+			r = r->nextNode;
 		}
 	}
 	void deleteCurrent() {
